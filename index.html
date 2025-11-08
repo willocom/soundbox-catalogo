@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SoundBox | Catálogo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* Reset box sizing for more predictable sizing */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #fff;
+      color: #333;
+    }
+    header {
+  text-align: center;
+  padding: 0rem 0;
+  border-bottom: 1px solid #eee;
+  /* Fondo suave: degradado azul claro, puedes cambiar los colores */
+  background: linear-gradient(180deg, #FAFAFF 0%, #ffffff 55%, #ffffff 0%);
+}
+    header h1 {
+      color: #007bff;
+      margin: 0;
+      font-weight: 600;
+    }
+    .filter-bar {
+      text-align: center;
+      margin: 1.5rem 0;
+    }
+    .filter-bar input {
+      padding: 0.5rem 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      width: 200px;
+      margin-right: 0.5rem;
+      font-family: 'Poppins';
+    }
+    .filter-bar button {
+      background-color: #007bff;
+      border: none;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      margin: 0 0.3rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-family: 'Poppins';
+    }
+    .filter-bar button.active {
+      background-color: #0056b3;
+    }
+    .filter-bar button:hover {
+      background-color: #0056b3;
+    }
+
+    /* Catálogo */
+    .catalogo {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 25px;
+      justify-items: center;
+      align-items: start;
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+      transition: all 0.5s ease;
+    }
+    @media (min-width: 1024px) {
+      .catalogo {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+    @media (max-width: 768px) {
+      .catalogo {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .producto {
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      opacity: 1;
+      transform: scale(1);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+      transition-delay: 0.05s;
+    }
+    .producto.hidden {
+      opacity: 0;
+      transform: scale(0.9);
+      pointer-events: none;
+      transition-delay: 0s;
+    }
+    .producto img {
+      width: 100%;
+      height: 210px;
+      object-fit: contain;
+      border-radius: 15px;
+      background-color: #F7F7FA;
+      padding: 0px;
+      margin-bottom: 0.5rem;
+    }
+    .producto h3 {
+      font-size: 1rem;
+      color: #007bff;
+      margin: 0.5rem 0;
+    }
+    .producto p {
+      color: #333;
+      font-weight: 500;
+    }
+    .producto button {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: 0.3s;
+    }
+    .producto button:hover {
+      background-color: #0056b3;
+    }
+
+    /* Modal base */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .modal-content {
+      background-color: #fff;
+      border-radius: 12px;
+      max-width: 900px;
+      width: 90%;
+      padding: 1.5rem;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      position: relative;
+      animation: fadeIn 0.3s ease;
+      overflow-y: auto;
+      max-height: 85vh;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* modal inner layout: default column (mobile), row on desktop */
+    .modal-inner {
+      display: flex;
+      gap: 1rem;
+      flex-direction: column;
+    }
+    .modal-inner img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      border-radius: 10px;
+      background-color: #f8f8f8;
+      margin-bottom: 1rem;
+    }
+    .modal-inner .modal-details {
+      flex: 1;
+    }
+
+    /* Desktop: image left, info right */
+    @media (min-width: 1024px) {
+      .modal-inner {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+      .modal-inner img {
+        width: 45%;
+        max-height: 60vh;
+      }
+      .modal-inner .modal-details {
+        width: 55%;
+      }
+    }
+
+    .modal-details {
+      flex: 1;
+    }
+    .close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #555;
+      background: transparent;
+      border: 0;
+    }
+    .modal-content h2 {
+      color: #007bff;
+      margin-bottom: 0.5rem;
+    }
+    .share-btn {
+      display: inline-block;
+      margin-top: 1rem;
+      text-decoration: none;
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 500;
+      background-color: #007bff;
+      margin-left: 0.5rem;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* Cart/chat styles */
+    .sb-cart-btn {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 1200;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      background: linear-gradient(180deg,#007bff,#0056b3);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 999px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+      cursor: pointer;
+    }
+    .sb-cart-count {
+      background: #ff3b30;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    .sb-cart-modal .modal-content {
+      width: 94%;
+      max-width: 820px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .sb-cart-list { display:flex; flex-direction:column; gap:10px; margin-top:6px; }
+    .sb-cart-item {
+      display:flex;
+      gap:10px;
+      align-items:center;
+      border:1px solid #f1f1f1;
+      padding:8px;
+      border-radius:10px;
+    }
+    .sb-cart-item img { width:72px; height:56px; object-fit:contain; border-radius:8px; background:#fafafa; }
+    .sb-cart-item .sb-meta { flex:1; min-width:0; }
+    .sb-qty-controls { display:flex; gap:6px; align-items:center; }
+    .sb-qty-controls input { width:58px; padding:6px; border-radius:6px; border:1px solid #ddd; text-align:center; }
+
+    .sb-cart-footer {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-top:6px;
+      flex-wrap:wrap;
+    }
+    .sb-total { font-weight:700; font-size:1.05rem; }
+
+    /* Chat window styles */
+    .chat-modal .modal-content { max-width:720px; width:92%; }
+    .chat-window { display:flex; flex-direction:column; gap:.6rem; height:70vh; max-height:70vh; }
+    .chat-messages { flex:1; overflow:auto; padding:.5rem; display:flex; flex-direction:column; gap:.5rem; }
+    .chat-message { max-width:78%; padding:.6rem .8rem; border-radius:12px; font-size:.95rem; }
+    .bot { background:#f1f5ff; color:#05205b; align-self:flex-start; }
+    .user { background:#007bff; color:#fff; align-self:flex-end; }
+    .chat-options { display:flex; gap:.5rem; flex-wrap:wrap; padding:.4rem 0; }
+    .summary-box { background:#f7f7fb; border-radius:8px; padding:.6rem; border:1px solid #eee; }
+
+    /* Footer: simplified centered copyright only */
+    footer {
+  background-color: #001f3f; /* celeste pastel */
+  padding: 2rem 0;
+  margin-top: 3rem;
+  font-family: 'Zalando Sans SemiExpanded', sans-serif;
+}
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* centra ambos horizontalmente */
+  gap: 1rem; /* espacio entre logo y texto */
+}
+
+.footer-logo {
+  width: 100px; /* ajusta según necesites */
+  height: auto;
+}
+    footer small { display:block; margin:0; color:#ffffff; }
+
+    @media (max-width:480px) {
+      .modal-content { max-width: 95%; padding: 1rem; }
+      .chat-window { height:60vh; max-height:60vh; }
+      .sb-cart-item img { width:56px; height:44px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-images-row">
+      <img src="https://i.postimg.cc/sfbq6sXm/3-copia.png" alt="Logo 1" class="logo-large" />
+  <img src="https://i.postimg.cc/bwk6FtMZ/2-copia.png" alt="Logo 2" class="logo-small" />
+   </div>
+   </header>
+<style>
+.header-images-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 0rem;
+}
+.header-images-row .logo-small {
+  height: 122px;
+  width: auto;
+}
+.header-images-row .logo-large {
+  height: 72px;   /* Slightly larger */
+  width: auto;
+}
+@media (max-width:480px) {
+  .header-images-row .logo-small {
+    height: 100px;
+  }
+  .header-images-row .logo-large {
+    height: 60px;
+  }
+}
+</style>
+
+  <div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="Buscar producto...">
+    <button class="filter-btn active" data-filter="todos">Todos</button>
+    <button class="filter-btn" data-filter="acustica">Guitarra acústica</button>
+    <button class="filter-btn" data-filter="electrica">Guitarra eléctrica</button>
+    <button class="filter-btn" data-filter="clasica">Guitarra clásica</button>
+    <button class="filter-btn" data-filter="bajo">Bajo eléctico</button>
+    <button class="filter-btn" data-filter="ukelele">Ukelele</button>
+  </div>
+
+  <section class="catalogo">
+    <!-- Producto cards unchanged -->
+    <div class="producto" data-category="acustica" data-id="DP-010">
+      <img src="https://i.postimg.cc/tg0453f3/DP-010.jpg" alt="ZIKO DP-010">
+      <h3>SET 6 CUERDAS PARA GUITARRA ACÚSTICA EXTRA LIGHT SPECIAL CALIBRE .010-.048</h3>
+      <p>Q55.00</p>
+      <button onclick="openModal('DP-010')">Más información</button>
+    </div>
+    <div class="producto" data-category="clasica" data-id="DPA-70">
+      <img src="https://i.postimg.cc/TP839VSr/DPA-70.jpg" alt="ZIKO DPA-70">
+      <h3>SET 6 CUERDAS PARA GUITARRA CLÁSICA NYLON MIDDEL CALIBRE .071-.109</h3>
+      <p>Q55.00</p>
+      <button onclick="openModal('DPA-70')">Más información</button>
+    </div>
+    <div class="producto" data-category="electrica" data-id="DN-009">
+      <img src="https://i.postimg.cc/13VzwCW6/DN-009.jpg" alt="ZIKO DN-009">
+      <h3>SET 6 CUERDAS PARA GUITARRA ELÉCTRICA EXTRA LIGHT SPECIAL CALIBRE .009-.042</h3>
+      <p>Q55.00</p>
+      <button onclick="openModal('DN-009')">Más información</button>
+    </div>
+    <div class="producto" data-category="electrica" data-id="DN-010">
+      <img src="https://i.postimg.cc/jSnjPg87/DN-010.jpg" alt="ZIKO DN-010">
+      <h3>SET 6 CUERDAS PARA GUITARRA ELÉCTRICA LIGHT CALIBRE .010-.046</h3>
+      <p>Q55.00</p>
+      <button onclick="openModal('DN-010')">Más información</button>
+    </div>
+    <div class="producto" data-category="ukelele" data-id="DU-23">
+      <img src="https://i.postimg.cc/xdr1Rv74/DU-23.jpg" alt="ZIKO DU-23">
+      <h3>SET 4 CUERDAS PARA UKELELE STANDARD CALIBRE .062-.067</h3>
+      <p>Q30.00</p>
+      <button onclick="openModal('DU-23')">Más información</button>
+    </div>
+    <div class="producto" data-category="bajo" data-id="DN-045">
+      <img src="https://i.postimg.cc/L8gsLCyg/DN045.jpg" alt="ZIKO DN-045">
+      <h3>SET 4 CUERDAS PARA BAJO ELÉCTRICO EXTRA LIGHT SPECIAL CALIBRE .045-.100</h3>
+      <p>Q128.00</p>
+      <button onclick="openModal('DN-045')">Más información</button>
+    </div>
+    <div class="producto" data-category="bajo" data-id="DN-045-5">
+      <img src="https://i.postimg.cc/13VzwCWm/DN045-5.jpg" alt="ZIKO DN-045-5">
+      <h3>SET 5 CUERDAS PARA BAJO ELÉCTRICO EXTRA LIGHT SPECIAL CALIBRE .045-.125</h3>
+      <p>Q165.00</p>
+      <button onclick="openModal('DN-045-5')">Más información</button>
+    </div>
+    <div class="producto" data-category="acustica" data-id="DAG-010">
+      <img src="https://i.postimg.cc/9f3QpdSR/DAG-010.png" alt="ZIKO DAG-010">
+      <h3>SET 6 CUERDAS PARA GUITARRA ACÚSTICA EXTRA LIGHT CALIBRE .010-.048</h3>
+      <p>Q35.00</p>
+      <button onclick="openModal('DAG-010')">Más información</button>
+    </div>
+    <div class="producto" data-category="acustica" data-id="DAG-011">
+      <img src="https://i.postimg.cc/YScC36VW/DAG-011.jpg" alt="ZIKO DAG-011">
+      <h3>SET 6 CUERDAS PARA GUITARRA ACÚSTICA CUSTOM LIGHT CALIBRE .011-.050</h3>
+      <p>Q35.00</p>
+      <button onclick="openModal('DAG-011')">Más información</button>
+    </div>
+  </section>
+
+  <!-- Product Modal -->
+  <div id="productModal" class="modal" role="dialog" aria-hidden="true" aria-labelledby="modalTitle">
+    <div class="modal-content" id="modalContent" role="document">
+      <button class="close" aria-label="Cerrar" id="closeProductModal">&times;</button>
+      <!-- content injected by openModal(id) -->
+    </div>
+  </div>
+
+  <!-- Cart UI -->
+  <div id="sbCartBtn" class="sb-cart-btn" title="Abrir carrito" aria-label="Abrir carrito">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M3 3h2l.4 2M7 13h10l3-8H6.4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div class="sb-cart-label" style="font-weight:600;color:white;">Carrito</div>
+    <div id="sbCartCount" class="sb-cart-count">0</div>
+  </div>
+
+  <div id="sbCartModal" class="modal sb-cart-modal" aria-hidden="true" role="dialog" aria-labelledby="sbCartTitle">
+    <div class="modal-content" id="sbCartContent">
+      <button class="close" aria-label="Cerrar carrito" id="sbCartClose">&times;</button>
+      <h2 id="sbCartTitle">Tu carrito</h2>
+      <div id="sbCartList" class="sb-cart-list"></div>
+      <div class="sb-cart-footer">
+        <div id="sbCartSummary" class="small muted">0 artículos</div>
+        <div id="sbCartTotal" class="sb-total">Q0.00</div>
+      </div>
+      <div style="display:flex; gap:.5rem; justify-content:flex-end; margin-top:.6rem;">
+        <button id="sbCartContinue" style="background:#eee;border:0;padding:.6rem .9rem;border-radius:8px;cursor:pointer;">Continuar comprando</button>
+        <button id="sbCartCheckout" style="background:#007bff;color:white;border:0;padding:.6rem .9rem;border-radius:8px;cursor:pointer;">Finalizar pedido</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat modal (checkout flow) -->
+  <div id="chatModal" class="modal chat-modal" aria-hidden="true" role="dialog" aria-labelledby="chatTitle">
+    <div class="modal-content" id="chatContent">
+      <button class="close" aria-label="Cerrar chat" id="closeChatBtn">&times;</button>
+      <h2 id="chatTitle">Confirmar pedido</h2>
+      <div class="chat-window">
+        <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
+        <div id="chatControls" class="chat-options" role="region" aria-label="Opciones de chat"></div>
+        <div style="display:flex; gap:.5rem; justify-content:flex-end;">
+          <button class="btn btn-outline" id="chatBackBtn" style="display:none;">Atrás</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+  <div class="footer-content">
+    <img src="https://i.postimg.cc/TY8gN4XW/SOUNDBOX-removebg-preview.png" alt="SoundBox Logo" class="footer-logo">
+    <small>© 2025 SoundBox. Todos los derechos reservados.</small>
+  </div>
+</footer>
+
+  <script>
+    /***********************
+     * PRODUCT DATA & MODAL
+     * (UNCHANGED features preserved, except modal inner markup)
+     ***********************/
+    const productos = {
+      "DP-010": { img: "https://i.postimg.cc/tg0453f3/DP-010.jpg", title: "SET 6 CUERDAS PARA GUITARRA ACÚSTICA EXTRA LIGHT SPECIAL CALIBRE .010-.048 MARCA ZIKO DP-010", price: "Q55.00", unit: "Paquete", desc: "Marca: ZIKO<br>SKU: DP-010<br>Material: Bronce fosforoso<br>Grosor: Extra Light Special<br>Calibre: .010-.014-.023-.030-.039-.048<br>Etiquetas: Ziko Acoustic guitar string, Ziko, guitarra" },
+      "DPA-70": { img: "https://i.postimg.cc/TP839VSr/DPA-70.jpg", title: "SET 6 CUERDAS PARA GUITARRA CLÁSICA NYLON MIDDEL CALIBRE .071-.109 MARCA ZIKO DPA-70", price: "Q55.00", unit: "Paquete", desc: "Marca: ZIKO<br>SKU: DPA-70<br>Material: #1-#3 nylon / #4-#6 recubrimiento de plata<br>Grosor: Middel<br>Calibre: .071-.081-.102-.076-.089-.109<br>Etiquetas: Ziko Classical guitar string, Ziko, guitarra" },
+      "DN-009": { img: "https://i.postimg.cc/13VzwCW6/DN-009.jpg", title: "SET 6 CUERDAS PARA GUITARRA ELÉCTRICA EXTRA LIGHT SPECIAL CALIBRE .009-.042 MARCA ZIKO DN-009", price: "Q55.00", unit: "Paquete", desc: "Marca: ZIKO<br>SKU: DN-009<br>Material: Nickel wound<br>Grosor: Extra Light Special<br>Calibre: .009-.011-.016-.024-.032-.042<br>Etiquetas: Ziko Electric guitar string, Ziko, guitarra" },
+      "DN-010": { img: "https://i.postimg.cc/jSnjPg87/DN-010.jpg", title: "SET 6 CUERDAS PARA GUITARRA ELÉCTRICA LIGHT CALIBRE .010-.046 MARCA ZIKO DN-010", price: "Q55.00", unit: "Paquete", desc: "Marca: ZIKO<br>SKU: DN-010<br>Material: Nickel wound<br>Grosor: Light<br>Calibre: .010-.013-.017-w.026-w.036-w.046<br>Etiquetas: Ziko Electric guitar string, Ziko, guitarra" },
+      "DU-23": { img: "https://i.postimg.cc/xdr1Rv74/DU-23.jpg", title: "SET 4 CUERDAS PARA UKELELE STANDARD CALIBRE .062-.067 MARCA ZIKO DU-23", price: "Q30.00", unit: "Paquete", desc: "Marca: ZIKO<br>SKU: DU-23<br>Material: Nylon<br>Grosor: Standard<br>Calibre: .062-.080-.095-.067<br>Etiquetas: Ziko Ukelele string, Ziko, Ukelele" },
+      "DN-045": { img: "https://i.postimg.cc/L8gsLCyg/DN045.jpg", title: "SET 4 CUERDAS PARA BAJO ELÉCTRICO EXTRA LIGHT SPECIAL CALIBRE .045-.100 MARCA ZIKO DN-045", price: "Q128.00", unit: "Paquete", desc: "Marca: ZIKO<br>SKU: DN-045<br>Material: Nickel wound<br>Grosor: Extra light especial<br>Calibre: .045-.065-.080-.100<br>Etiquetas: Ziko electric bass string, Ziko, electric bass" },
+      "DN-045-5": { img: "https://i.postimg.cc/13VzwCWm/DN045-5.jpg", title: "SET 5 CUERDAS PARA BAJO ELÉCTRICO EXTRA LIGHT SPECIAL CALIBRE .045-.125 MARCA ZIKO DN-045-5", price: "Q165.00", unit: "Paquete", desc: "Marca: ZIKO<br>SKU: DN-045-5<br>Material: Nickel wound<br>Grosor: Extra light especial<br>Calibre: .045-.065-.085-.105-.125<br>Etiquetas: Ziko electric bass string, Ziko, electric bass" },
+      "DAG-010": { img: "https://i.postimg.cc/9f3QpdSR/DAG-010.png", title: "SET 6 CUERDAS PARA GUITARRA ACÚSTICA EXTRA LIGHT CALIBRE .010-.048 MARCA ZIKO DAG-010", price: "Q35.00", unit: "Paquete", desc: "Marca: ZIKO<br>SKU: DAG-010<br>Material: Bronce fosforoso<br>Grosor: Extra Light<br>Calibre: .010-.014-.023-.030-.039-.048<br>Etiquetas: Ziko Acoustic guitar string, Ziko, guitarra" },
+      "DAG-011": { img: "https://i.postimg.cc/YScC36VW/DAG-011.jpg", title: "SET 6 CUERDAS PARA GUITARRA ACÚSTICA CUSTOM LIGHT CALIBRE .011-.050 MARCA ZIKO DAG-011", price: "Q35.00", unit: "Paquete", desc: "Marca: ZIKO<br>SKU: DAG-011<br>Material: Bronce fosforoso<br>Grosor: Custom Light<br>Calibre: .011-.015-.025-.032-.042-.050<br>Etiquetas: Ziko Acoustic guitar string, Ziko, guitarra" }
+    };
+
+    const productModal = document.getElementById("productModal");
+    const modalContent = document.getElementById("modalContent");
+    const closeProductModalBtn = document.getElementById("closeProductModal");
+    if (closeProductModalBtn) closeProductModalBtn.addEventListener('click', () => { productModal.style.display = 'none'; document.body.style.overflow = ''; });
+
+    function openModal(id) {
+      const p = productos[id];
+
+      // Use modal-inner structure so CSS adjusts to desktop (image left, details right)
+      modalContent.innerHTML = `
+        <button class="close" aria-label="Cerrar" id="closeProductModalInner">&times;</button>
+        <div class="modal-inner">
+          <img src="${p.img}" alt="${p.title}">
+          <div class="modal-details">
+            <h2 id="modalTitle">${p.title}</h2>
+            <p><strong>Precio:</strong> ${p.price}</p>
+            <p><strong>Unidad:</strong> ${p.unit}</p>
+            <p>${p.desc}</p>
+            <div style="margin-top:8px;">
+              <button class="share-btn" id="shareBtn">Compartir</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Mark current product id on modalContent so cart injector can use it reliably
+      modalContent.dataset.currentProduct = id;
+
+      // Show modal
+      productModal.style.display = "flex";
+      productModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+
+      // Attach close
+      const closeInner = document.getElementById('closeProductModalInner');
+      if (closeInner) closeInner.addEventListener('click', () => {
+        productModal.style.display = 'none';
+        productModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        delete modalContent.dataset.currentProduct;
+      });
+
+      // Attach share behaviour
+      const shareBtn = modalContent.querySelector('#shareBtn');
+      if (shareBtn) {
+        shareBtn.addEventListener('click', async () => {
+          const productUrl = `${window.location.origin}${window.location.pathname}?product=${encodeURIComponent(id)}`;
+          if (navigator.share) {
+            try {
+              await navigator.share({
+                title: p.title,
+                text: `Mira este producto en SoundBox: ${p.title}`,
+                url: productUrl
+              });
+            } catch (err) {
+              if (err && err.name !== 'AbortError') {
+                alert('No se pudo compartir el producto. Intenta de nuevo.');
+              }
+            }
+          } else {
+            alert('Sharing is not supported on this browser. You can copy the link manually.\n\n' + productUrl);
+          }
+        });
+      }
+    }
+
+    window.onclick = function(event) {
+      if (event.target === productModal) {
+        productModal.style.display = "none";
+        productModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        delete modalContent.dataset.currentProduct;
+      }
+    }
+
+    // Search/filter (unchanged)
+    function normalizeText(text) { return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+    const searchInput = document.getElementById("searchInput");
+    const filterButtons = document.querySelectorAll(".filter-btn");
+    const productosDiv = document.querySelectorAll(".producto");
+    function showProduct(p) { p.style.display = "flex"; setTimeout(()=> p.classList.remove("hidden"), 10); }
+    function hideProduct(p) { p.classList.add("hidden"); p.addEventListener("transitionend", function handler(){ if (p.classList.contains("hidden")) p.style.display = "none"; p.removeEventListener("transitionend", handler); }); }
+    searchInput.addEventListener("input", () => {
+      const searchText = normalizeText(searchInput.value.trim());
+      const activeFilter = document.querySelector(".filter-btn.active")?.dataset.filter || "todos";
+      productosDiv.forEach(p => {
+        const name = normalizeText(p.querySelector("h3").textContent);
+        const category = p.dataset.category;
+        if ((activeFilter === "todos" || category === activeFilter) && name.includes(searchText)) showProduct(p);
+        else hideProduct(p);
+      });
+    });
+    filterButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const filtro = btn.dataset.filter;
+        filterButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        const searchText = normalizeText(searchInput.value.trim());
+        productosDiv.forEach(p => {
+          const name = normalizeText(p.querySelector("h3").textContent);
+          const category = p.dataset.category;
+          if ((filtro === "todos" || category === filtro) && name.includes(searchText)) showProduct(p);
+          else hideProduct(p);
+        });
+      });
+    });
+
+    /* --- the rest of the JS (cart + chat) remains unchanged from prior working version --- */
+
+    /***********************
+     * CART FUNCTIONALITY
+     ***********************/
+    (function () {
+      const STORAGE_KEY = 'soundbox_cart_v1';
+      let sbCart = {}; // { id: { id, title, priceNum, qty, img } }
+
+      function parsePriceText(priceText) {
+        if (!priceText) return 0;
+        const n = Number(String(priceText).replace(/[^\d.,-]/g, '').replace(',', '.'));
+        return isNaN(n) ? 0 : n;
+      }
+      function formatPrice(n) {
+        return 'Q' + Number(n).toFixed(2);
+      }
+
+      function loadCart() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          sbCart = raw ? JSON.parse(raw) : {};
+        } catch (e) { sbCart = {}; }
+        renderCartCount();
+      }
+      function saveCart() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(sbCart));
+        } catch (e) {}
+        renderCartCount();
+      }
+
+      function sbAddToCart(id, qty = 1) {
+        if (!productos || !productos[id]) return;
+        const p = productos[id];
+        const priceNum = parsePriceText(p.price || p.priceText || '0');
+        if (!sbCart[id]) {
+          sbCart[id] = { id, title: p.title, priceNum, qty: 0, img: p.img };
+        }
+        sbCart[id].qty += Number(qty) || 1;
+        if (sbCart[id].qty < 1) sbCart[id].qty = 1;
+        saveCart();
+        renderCartList();
+      }
+      function sbUpdateQty(id, qty) {
+        if (!sbCart[id]) return;
+        const q = parseInt(qty) || 0;
+        if (q <= 0) {
+          delete sbCart[id];
+        } else {
+          sbCart[id].qty = q;
+        }
+        saveCart();
+        renderCartList();
+      }
+      function sbRemove(id) {
+        if (!sbCart[id]) return;
+        delete sbCart[id];
+        saveCart();
+        renderCartList();
+      }
+      function sbClearCart() {
+        sbCart = {};
+        saveCart();
+        renderCartList();
+      }
+      function sbTotals() {
+        const items = Object.values(sbCart);
+        const subtotal = items.reduce((s, it) => s + (it.priceNum || 0) * (it.qty || 0), 0);
+        const count = items.reduce((c, it) => c + (it.qty || 0), 0);
+        return { items, subtotal, count };
+      }
+
+      // DOM refs
+      const sbCartBtn = document.getElementById('sbCartBtn');
+      const sbCartCount = document.getElementById('sbCartCount');
+      const sbCartModal = document.getElementById('sbCartModal');
+      const sbCartClose = document.getElementById('sbCartClose');
+      const sbCartList = document.getElementById('sbCartList');
+      const sbCartTotal = document.getElementById('sbCartTotal');
+      const sbCartSummary = document.getElementById('sbCartSummary');
+      const sbCartCheckout = document.getElementById('sbCartCheckout');
+      const sbCartContinue = document.getElementById('sbCartContinue');
+
+      function renderCartCount() {
+        const { count, subtotal } = sbTotals();
+        if (sbCartCount) sbCartCount.textContent = count;
+        if (sbCartTotal) sbCartTotal.textContent = formatPrice(subtotal || 0);
+        if (sbCartSummary) sbCartSummary.textContent = `${count} artículo${count !== 1 ? 's' : ''}`;
+      }
+
+      function renderCartList() {
+        sbCartList.innerHTML = '';
+        const { items, subtotal } = sbTotals();
+        if (!items.length) {
+          sbCartList.innerHTML = '<div class="muted">Tu carrito está vacío. Agrega productos desde el catálogo.</div>';
+        } else {
+          items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'sb-cart-item';
+            div.innerHTML = `
+              <img src="${item.img}" alt="${escapeHtml(item.title)}" />
+              <div class="sb-meta">
+                <div style="font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(item.title)}</div>
+                <div class="muted small">Unidad: ${formatPrice(item.priceNum)} • ${item.qty} unidad${item.qty>1?'es':''}</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+                <div style="font-weight:700;">${formatPrice(item.priceNum * item.qty)}</div>
+                <div class="sb-qty-controls">
+                  <button data-action="dec" data-id="${item.id}" style="padding:6px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;">-</button>
+                  <input type="number" min="1" value="${item.qty}" data-input-id="${item.id}" />
+                  <button data-action="inc" data-id="${item.id}" style="padding:6px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;">+</button>
+                  <button data-action="remove" data-id="${item.id}" style="padding:6px;border-radius:6px;background:transparent;border:0;color:#ff3b30;cursor:pointer;">Eliminar</button>
+                </div>
+              </div>
+            `;
+            sbCartList.appendChild(div);
+          });
+        }
+        renderCartCount();
+      }
+
+      function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, function (m) {
+          return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]);
+        });
+      }
+
+      // Events
+      sbCartBtn.addEventListener('click', () => {
+        renderCartList();
+        sbCartModal.style.display = 'flex';
+        sbCartModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      });
+      sbCartClose.addEventListener('click', closeSbCart);
+      sbCartContinue.addEventListener('click', () => closeSbCart());
+      function closeSbCart() {
+        sbCartModal.style.display = 'none';
+        sbCartModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+      }
+      sbCartModal.addEventListener('click', (ev) => { if (ev.target === sbCartModal) closeSbCart(); });
+
+      sbCartList.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('[data-action]');
+        if (!btn) return;
+        const id = btn.getAttribute('data-id');
+        const action = btn.getAttribute('data-action');
+        if (action === 'inc') sbAddToCart(id, 1);
+        if (action === 'dec') {
+          const current = sbCart[id]?.qty || 0;
+          sbUpdateQty(id, Math.max(0, current - 1));
+        }
+        if (action === 'remove') sbRemove(id);
+      });
+      sbCartList.addEventListener('change', (ev) => {
+        const input = ev.target.closest('input[data-input-id]');
+        if (!input) return;
+        const id = input.getAttribute('data-input-id');
+        const val = parseInt(input.value) || 1;
+        sbUpdateQty(id, val);
+      });
+
+      // Checkout handling remains the same (calls startChat)
+      sbCartCheckout.addEventListener('click', () => {
+        const { items } = sbTotals();
+        if (!items.length) {
+          alert('Tu carrito está vacío. Agrega productos antes de finalizar.');
+          return;
+        }
+        if (typeof window.startChat === 'function') {
+          closeSbCart();
+          window.startChat();
+        } else {
+          const { subtotal } = sbTotals();
+          const lines = items.map(it => `• ${it.title} x ${it.qty} = ${formatPrice(it.priceNum * it.qty)}`).join('\n');
+          const plain = `Hola, deseo hacer un pedido desde SoundBox.\n\nProductos:\n${lines}\n\nTotal: ${formatPrice(subtotal)}\n\nPor favor, confirmen disponibilidad y el monto final. Gracias.`;
+          const waUrl = `https://wa.me/50232544935?text=${encodeURIComponent(plain)}`;
+          window.open(waUrl, '_blank', 'noopener');
+        }
+      });
+
+      // Inject add-to-cart button into product modal
+      const mo = new MutationObserver(() => {
+        if (productModal.style.display === 'flex' || productModal.style.display === 'block') {
+          const details = modalContent.querySelector('.modal-details');
+          if (!details) return;
+          if (details.querySelector('.sb-add-btn')) return;
+          const pid = modalContent.dataset.currentProduct || null;
+          const addBtn = document.createElement('button');
+          addBtn.className = 'sb-add-btn';
+          addBtn.textContent = 'Agregar al carrito';
+          addBtn.style.marginLeft = '8px';
+          addBtn.style.padding = '8px 12px';
+          addBtn.style.borderRadius = '8px';
+          addBtn.style.border = 'none';
+          addBtn.style.cursor = 'pointer';
+          addBtn.style.background = '#28a745';
+          addBtn.style.color = '#fff';
+          details.appendChild(addBtn);
+
+          addBtn.addEventListener('click', () => {
+            const productId = modalContent.dataset.currentProduct || null;
+            if (productId && productos[productId]) {
+              sbAddToCart(productId, 1);
+              addBtn.textContent = 'Agregado';
+              setTimeout(() => addBtn.textContent = 'Agregar al carrito', 900);
+            } else {
+              alert('No se pudo identificar el producto para agregar al carrito.');
+            }
+          });
+        }
+      });
+      mo.observe(modalContent, { childList: true, subtree: true });
+
+      // Expose API
+      window.sbGetCartTotals = sbTotals;
+      window.sbAddToCart = sbAddToCart;
+      window.sbRenderCartList = renderCartList;
+      window.sbClearCart = sbClearCart;
+
+      // Initialize
+      loadCart();
+      renderCartList();
+    })();
+
+    /******************************
+     * CHAT / GUIDED CHECKOUT FLOW
+     * (kept unchanged)
+     ******************************/
+    (function () {
+      const chatModal = document.getElementById("chatModal");
+      const chatMessages = document.getElementById("chatMessages");
+      const chatControls = document.getElementById("chatControls");
+      const chatBackBtn = document.getElementById("chatBackBtn");
+      const closeChatBtn = document.getElementById("closeChatBtn");
+
+      // basic state and helper functions (same behavior as before)
+      let state = { step: 'confirm', customer: { name:'', phone:'' }, delivery: { type:null, departamento:'', municipio:'', direccion:'', observaciones:'' }, payment: { method:null }, notes:'', history:[] };
+
+      function pushHistory() { state.history.push(JSON.parse(JSON.stringify(state))); }
+      function popHistory() { if (state.history.length) state = state.history.pop(); }
+
+      function clearChat() { chatMessages.innerHTML = ''; chatControls.innerHTML = ''; }
+      function bot(msg) { const el = document.createElement('div'); el.className='chat-message bot'; el.innerHTML = msg; chatMessages.appendChild(el); chatMessages.scrollTop = chatMessages.scrollHeight; }
+      function user(msg) { const el = document.createElement('div'); el.className='chat-message user'; el.innerHTML = msg; chatMessages.appendChild(el); chatMessages.scrollTop = chatMessages.scrollHeight; }
+      function escapeHtml(s='') { return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+      window.startChat = function() {
+        state = { step: 'confirm', customer: { name:'', phone:'' }, delivery: { type:null, departamento:'', municipio:'', direccion:'', observaciones:'' }, payment: { method:null }, notes:'', history:[] };
+        clearChat();
+        chatModal.style.display = 'flex'; chatModal.setAttribute('aria-hidden','false'); document.body.style.overflow = 'hidden';
+        bot("¡Perfecto! 😊 Has terminado de agregar tus productos.<br>¿Deseas continuar para finalizar tu pedido?");
+        renderConfirmOptions();
+      };
+
+      function closeChat() { chatModal.style.display = 'none'; chatModal.setAttribute('aria-hidden','true'); document.body.style.overflow = ''; }
+      if (closeChatBtn) closeChatBtn.addEventListener('click', closeChat);
+      if (chatModal) chatModal.addEventListener('click', (ev) => { if (ev.target === chatModal) closeChat(); });
+
+      function renderConfirmOptions() {
+        chatControls.innerHTML = '';
+        const yes = document.createElement('button'); yes.className='btn btn-outline'; yes.textContent='Sí, continuar con la compra';
+        const no = document.createElement('button'); no.className='btn btn-outline'; no.textContent='No, quiero agregar más productos';
+        yes.addEventListener('click', () => { user('Sí, continuar con la compra'); pushHistory(); setTimeout(renderCustomerForm, 250); });
+        no.addEventListener('click', () => { user('No, quiero agregar más productos'); closeChat(); const sbCartModal = document.getElementById('sbCartModal'); if (sbCartModal) { sbCartModal.style.display = 'flex'; sbCartModal.setAttribute('aria-hidden','false'); document.body.style.overflow = 'hidden'; } });
+        chatControls.appendChild(yes); chatControls.appendChild(no);
+        chatBackBtn.style.display = 'none';
+      }
+
+      function renderCustomerForm() {
+        state.step = 'customer';
+        chatControls.innerHTML = '';
+        bot("Por favor ingresa tus datos. (Obligatorio)");
+        const nameInput = document.createElement('input'); nameInput.placeholder='Nombre completo'; nameInput.style.width='100%'; nameInput.style.padding='8px'; nameInput.style.border='1px solid #ddd'; nameInput.style.borderRadius='6px';
+        const phoneInput = document.createElement('input'); phoneInput.placeholder='Número de celular (8 dígitos)'; phoneInput.style.width='100%'; phoneInput.style.padding='8px'; phoneInput.style.border='1px solid #ddd'; phoneInput.style.borderRadius='6px';
+        const send = document.createElement('button'); send.className='btn btn-primary'; send.textContent='Continuar';
+        send.addEventListener('click', () => {
+          const name = nameInput.value.trim(); const phone = phoneInput.value.trim();
+          if (!name) { alert('El nombre completo es obligatorio.'); return; }
+          if (!phone) { alert('El número de celular es obligatorio.'); return; }
+          const digits = phone.replace(/\D/g,'');
+          if (digits.length !== 8) { alert('El número de celular debe contener exactamente 8 dígitos numéricos.'); return; }
+          state.customer.name = name; state.customer.phone = phone;
+          user(`<strong>Nombre:</strong> ${escapeHtml(name)}<br><strong>Celular:</strong> ${escapeHtml(phone)}`);
+          pushHistory(); setTimeout(renderDeliveryOptions, 250);
+        });
+        chatControls.appendChild(nameInput); chatControls.appendChild(phoneInput); chatControls.appendChild(send);
+
+        chatBackBtn.style.display = 'inline-block';
+        chatBackBtn.onclick = () => { popHistory(); clearChat(); bot("¡Perfecto! 😊 Has terminado de agregar tus productos.<br>¿Deseas continuar para finalizar tu pedido?"); renderConfirmOptions(); };
+      }
+
+      function renderDeliveryOptions() {
+        state.step = 'delivery'; chatControls.innerHTML = ''; bot('¿Cómo deseas recibir tu pedido?');
+        const national = document.createElement('button'); national.className='btn btn-outline'; national.textContent='Envío nacional (+Q40)';
+        const local = document.createElement('button'); local.className='btn btn-outline'; local.textContent='Envío local (sin costo)';
+        national.addEventListener('click', () => { user('Envío nacional (+Q40)'); state.delivery.type='national'; pushHistory(); setTimeout(renderDeliveryAddressForm, 250); });
+        local.addEventListener('click', () => { user('Envío local (sin costo)'); state.delivery.type='local'; pushHistory(); bot('Entrega local — válido únicamente dentro del perímetro local. Entregas el mismo día, de 18:00 a 19:30 hrs.<br>Puntos de entrega disponibles: Parque Central Palin, C.C. El Encuentro Palin.'); setTimeout(renderPaymentOptions, 700); });
+        chatControls.appendChild(national); chatControls.appendChild(local);
+        chatBackBtn.style.display = 'inline-block'; chatBackBtn.onclick = () => { popHistory(); clearChat(); renderCustomerForm(); };
+      }
+
+      function renderDeliveryAddressForm() {
+        state.step = 'deliveryAddress'; chatControls.innerHTML = ''; bot('Por favor completa los datos de envío (Envío nacional).');
+        const dep = document.createElement('input'); dep.placeholder='Departamento';
+        const muni = document.createElement('input'); muni.placeholder='Municipio';
+        const direccion = document.createElement('input'); direccion.placeholder='Dirección de entrega';
+        const obs = document.createElement('textarea'); obs.placeholder='Observaciones (opcional)';
+        [dep, muni, direccion].forEach(el => { el.style.width='100%'; el.style.padding='8px'; el.style.border='1px solid #ddd'; el.style.borderRadius='6px'; el.style.marginTop='6px'; });
+        obs.style.width='100%'; obs.style.minHeight='60px'; obs.style.padding='8px'; obs.style.border='1px solid #ddd'; obs.style.borderRadius='6px';
+        const next = document.createElement('button'); next.className='btn btn-primary'; next.textContent='Continuar';
+        next.addEventListener('click', () => {
+          if (!dep.value.trim() || !muni.value.trim() || !direccion.value.trim()) { alert('Completa departamento, municipio y dirección.'); return; }
+          state.delivery.departamento = dep.value.trim(); state.delivery.municipio = muni.value.trim(); state.delivery.direccion = direccion.value.trim(); state.delivery.observaciones = obs.value.trim();
+          user(`<strong>Dirección:</strong> ${escapeHtml(state.delivery.direccion)}<br><strong>Depto:</strong> ${escapeHtml(state.delivery.departamento)} • <strong>Municipio:</strong> ${escapeHtml(state.delivery.municipio)}`);
+          pushHistory(); setTimeout(renderPaymentOptions, 250);
+        });
+        chatControls.appendChild(dep); chatControls.appendChild(muni); chatControls.appendChild(direccion); chatControls.appendChild(obs); chatControls.appendChild(next);
+        chatBackBtn.style.display = 'inline-block'; chatBackBtn.onclick = () => { popHistory(); clearChat(); renderDeliveryOptions(); };
+      }
+
+      function renderPaymentOptions() {
+        state.step = 'payment'; chatControls.innerHTML = ''; bot('¿Cuál será tu método de pago?');
+        const showCash = state.delivery.type !== 'national';
+        if (showCash) {
+          const cash = document.createElement('button'); cash.className='btn btn-outline'; cash.textContent='Pago en efectivo';
+          cash.addEventListener('click', () => { user('Pago en efectivo'); state.payment.method='cash'; pushHistory(); setTimeout(renderNotes, 400); });
+          chatControls.appendChild(cash);
+        }
+        const transfer = document.createElement('button'); transfer.className='btn btn-outline'; transfer.textContent='Pago por transferencia bancaria';
+        transfer.addEventListener('click', () => { user('Pago por transferencia bancaria'); state.payment.method='transfer'; pushHistory(); setTimeout(renderNotes, 300); });
+        chatControls.appendChild(transfer);
+        chatBackBtn.style.display = 'inline-block'; chatBackBtn.onclick = () => { popHistory(); clearChat(); renderDeliveryOptions(); };
+      }
+
+      function renderNotes() {
+        state.step = 'notes'; chatControls.innerHTML = ''; bot('¿Deseas agregar alguna nota o instrucción especial para tu pedido?');
+        const yes = document.createElement('button'); yes.className='btn btn-outline'; yes.textContent='Sí, quiero dejar una nota';
+        const no = document.createElement('button'); no.className='btn btn-outline'; no.textContent='No, todo está bien';
+        yes.addEventListener('click', () => {
+          user('Sí, quiero dejar una nota'); chatControls.innerHTML = '';
+          const ta = document.createElement('textarea'); ta.placeholder='Escribe tus instrucciones aquí...'; ta.style.width='100%'; ta.style.minHeight='80px'; ta.style.padding='.6rem'; ta.style.border='1px solid #ddd'; ta.style.borderRadius='8px';
+          const save = document.createElement('button'); save.className='btn btn-primary'; save.textContent='Guardar nota';
+          save.addEventListener('click', () => { state.notes = ta.value.trim(); user(state.notes ? escapeHtml(state.notes) : 'Sin nota'); pushHistory(); setTimeout(renderReview, 300); });
+          chatControls.appendChild(ta); chatControls.appendChild(save);
+        });
+        no.addEventListener('click', () => { user('No, todo está bien'); state.notes = ''; pushHistory(); setTimeout(renderReview, 300); });
+        chatControls.appendChild(yes); chatControls.appendChild(no);
+        chatBackBtn.style.display = 'inline-block'; chatBackBtn.onclick = () => { popHistory(); clearChat(); renderPaymentOptions(); };
+      }
+
+      function renderReview() {
+        state.step = 'review'; chatControls.innerHTML = ''; bot('¡Excelente! 🎉 Aquí está el resumen de tu pedido. Por favor, confirma que toda la información sea correcta antes de enviarlo.');
+        const totals = (typeof window.sbGetCartTotals === 'function') ? window.sbGetCartTotals() : { items: [], subtotal: 0 };
+        const { items, subtotal } = totals;
+        const shippingFee = (state.delivery.type === 'national') ? 40 : 0;
+        if (!items || !items.length) { bot('<div class="muted">Tu carrito está vacío.</div>'); }
+        else {
+          const lines = items.map(it => `• ${escapeHtml(it.title)} x ${it.qty} = Q${(it.priceNum * it.qty).toFixed(2)}`).join('<br>');
+          const deliveryLabel = (state.delivery.type === 'national') ? 'Envío nacional (+Q40)' : 'Envío local (sin costo)';
+          const addressHtml = state.delivery.type === 'national' ? `<br><strong>Dirección:</strong> ${escapeHtml(state.delivery.direccion)} • ${escapeHtml(state.delivery.municipio)}, ${escapeHtml(state.delivery.departamento)}` : '';
+          const paymentLabel = state.payment.method === 'transfer' ? 'Transferencia' : state.payment.method === 'cash' ? 'Efectivo' : '';
+          const notes = state.notes || 'Sin notas';
+          const summaryHtml = `<div style="margin-bottom:.4rem;"><strong>Productos:</strong><br>${lines}</div><div style="margin-bottom:.3rem;"><strong>Entrega:</strong> ${deliveryLabel}${addressHtml}</div><div style="margin-bottom:.3rem;"><strong>Pago:</strong> ${paymentLabel}</div><div style="margin-bottom:.3rem;"><strong>Cliente:</strong> ${escapeHtml(state.customer.name)} • ${escapeHtml(state.customer.phone)}</div><div style="margin-bottom:.3rem;"><strong>Notas:</strong> ${escapeHtml(notes)}</div><div style="margin-top:.5rem; font-weight:700;">Total: Q${(subtotal + shippingFee).toFixed(2)}</div>`;
+          bot(`<strong>Resumen del pedido:</strong><br>${summaryHtml}`);
+        }
+        const confirmBtn = document.createElement('button'); confirmBtn.className='btn btn-primary'; confirmBtn.textContent='Confirmar y enviar';
+        const editBtn = document.createElement('button'); editBtn.className='btn btn-outline'; editBtn.textContent='Editar algún detalle';
+        confirmBtn.addEventListener('click', () => { user('Confirmar y enviar'); pushHistory(); sendFinalWhatsAppAndFinish(); });
+        editBtn.addEventListener('click', () => { user('Editar algún detalle'); pushHistory(); setTimeout(() => { clearChat(); renderCustomerForm(); }, 300); });
+        chatControls.appendChild(confirmBtn); chatControls.appendChild(editBtn);
+        chatBackBtn.style.display = 'inline-block'; chatBackBtn.onclick = () => { popHistory(); clearChat(); renderNotes(); };
+      }
+
+      function sendFinalWhatsAppAndFinish() {
+        const totals = (typeof window.sbGetCartTotals === 'function') ? window.sbGetCartTotals() : { items: [], subtotal: 0 };
+        const { items, subtotal } = totals;
+        const shippingFee = (state.delivery.type === 'national') ? 40 : 0;
+        const lines = items.map(it => `• ${it.title} x ${it.qty} = Q${(it.priceNum * it.qty).toFixed(2)}`).join('\n');
+        const deliveryText = (state.delivery.type === 'national') ? `Envío nacional (+Q40) - ${state.delivery.departamento}, ${state.delivery.municipio}, ${state.delivery.direccion}` : 'Envío local (Parque Central Palin / C.C. El Encuentro Palin)';
+        const paymentText = state.payment.method === 'transfer' ? 'Transferencia' : state.payment.method === 'cash' ? 'Efectivo' : state.payment.method || '';
+        const notesText = state.notes || 'Sin notas';
+        const message = `Nuevo pedido desde SoundBox:\n\nCliente: ${state.customer.name}\nCelular: ${state.customer.phone}\n\nProductos:\n${lines}\n\nSubtotal: Q${subtotal.toFixed(2)}\nEnvío: Q${shippingFee.toFixed(2)}\nTotal: Q${(subtotal + shippingFee).toFixed(2)}\n\nEntrega: ${deliveryText}\nPago: ${paymentText}\nNotas: ${notesText}\n\nPor favor, confirmen disponibilidad y el monto final. Gracias.`;
+        const waOrderUrl = `https://wa.me/50232544935?text=${encodeURIComponent(message)}`;
+        window.open(waOrderUrl, '_blank', 'noopener');
+        bot('¡Gracias por tu compra! 🛍️ Hemos recibido tu compra; nuestro equipo te contactará pronto para coordinar la entrega.');
+        if (typeof window.sbClearCart === 'function') window.sbClearCart();
+        const ccount = document.getElementById('sbCartCount'); if (ccount) ccount.textContent = '0';
+        const ctotal = document.getElementById('sbCartTotal'); if (ctotal) ctotal.textContent = 'Q0.00';
+        const csummary = document.getElementById('sbCartSummary'); if (csummary) csummary.textContent = '0 artículos';
+        chatControls.innerHTML = ''; chatBackBtn.style.display = 'none'; state.step = 'done';
+      }
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === "Escape") {
+          if (chatModal.style.display === "flex") closeChat();
+        }
+      });
+    })();
+
+    // Close modals on Escape globally
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        const allModals = document.querySelectorAll('.modal');
+        allModals.forEach(m => {
+          if (m.style.display === 'flex' || m.style.display === 'block') {
+            m.style.display = 'none';
+            document.body.style.overflow = '';
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
